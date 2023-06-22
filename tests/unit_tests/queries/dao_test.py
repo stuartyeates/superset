@@ -14,28 +14,32 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import json
 
 
-import pytest
-from sqlalchemy.orm.session import Session
-
-
-def test_create_ssh_tunnel():
-    from superset.daos.database import DatabaseDAO, SSHTunnelDAO
-    from superset.databases.ssh_tunnel.models import SSHTunnel
+def test_column_attributes_on_query():
+    from superset.daos.query import QueryDAO
     from superset.models.core import Database
+    from superset.models.sql_lab import Query
 
-    db = Database(id=1, database_name="my_database", sqlalchemy_uri="sqlite://")
+    db = Database(database_name="my_database", sqlalchemy_uri="sqlite://")
+    query_obj = Query(
+        client_id="foo",
+        database=db,
+        tab_name="test_tab",
+        sql_editor_id="test_editor_id",
+        sql="select * from bar",
+        select_sql="select * from bar",
+        executed_sql="select * from bar",
+        limit=100,
+        select_as_cta=False,
+        rows=100,
+        error_message="none",
+        results_key="abc",
+    )
 
-    properties = {
-        "database_id": db.id,
-        "server_address": "123.132.123.1",
-        "server_port": "3005",
-        "username": "foo",
-        "password": "bar",
-    }
+    columns = [{"name": "test", "is_dttm": False, "type": "INT"}]
+    payload = {"columns": columns}
 
-    result = SSHTunnelDAO.create(properties)
-
-    assert result is not None
-    assert isinstance(result, SSHTunnel)
+    QueryDAO.save_metadata(query_obj, payload)
+    assert "column_name" in json.loads(query_obj.extra_json).get("columns")[0]

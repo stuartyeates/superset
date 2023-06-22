@@ -35,7 +35,12 @@ from superset.constants import EMPTY_STRING, NULL_STRING
 from superset.datasets.commands.exceptions import DatasetNotFoundError
 from superset.models.helpers import AuditMixinNullable, ImportExportMixin, QueryResult
 from superset.models.slice import Slice
-from superset.superset_typing import FilterValue, FilterValues, QueryObjectDict
+from superset.superset_typing import (
+    FilterValue,
+    FilterValues,
+    QueryObjectDict,
+    ResultSetColumnType,
+)
 from superset.utils import core as utils
 from superset.utils.core import GenericDataType, MediumText
 
@@ -434,7 +439,14 @@ class BaseDatasource(
             if isinstance(value, str):
                 value = value.strip("\t\n")
 
-                if target_generic_type == utils.GenericDataType.NUMERIC:
+                if (
+                    target_generic_type == utils.GenericDataType.NUMERIC
+                    and operator
+                    not in {
+                        utils.FilterOperator.ILIKE,
+                        utils.FilterOperator.LIKE,
+                    }
+                ):
                     # For backwards compatibility and edge cases
                     # where a column data type might have changed
                     return utils.cast_to_num(value)
@@ -456,7 +468,7 @@ class BaseDatasource(
             values = values[0] if values else None
         return values
 
-    def external_metadata(self) -> list[dict[str, str]]:
+    def external_metadata(self) -> list[ResultSetColumnType]:
         """Returns column information from the external system"""
         raise NotImplementedError()
 

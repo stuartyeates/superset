@@ -23,8 +23,8 @@ from flask_appbuilder import Model
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from superset.dao.base import BaseDAO
-from superset.dao.exceptions import DAOCreateFailedError, DAODeleteFailedError
+from superset.daos.base import BaseDAO
+from superset.daos.exceptions import DAOCreateFailedError, DAODeleteFailedError
 from superset.extensions import db
 from superset.reports.filters import ReportScheduleFilter
 from superset.reports.models import (
@@ -42,8 +42,7 @@ logger = logging.getLogger(__name__)
 REPORT_SCHEDULE_ERROR_NOTIFICATION_MARKER = "Notification sent with error"
 
 
-class ReportScheduleDAO(BaseDAO):
-    model_cls = ReportSchedule
+class ReportScheduleDAO(BaseDAO[ReportSchedule]):
     base_filter = ReportScheduleFilter
 
     @staticmethod
